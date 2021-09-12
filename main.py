@@ -28,6 +28,8 @@ def count_metrics(text_fun: str):
     #     2) "Docstring" is only one-line (and it string, not a comment)
     #     3) The function is compiled
     #     4) the code is not too fancy (only the main cases are processed)
+    def comment_symbols(str):
+        return str if str in ["'''", '"""'] else str[0]
 
     def remove_strings_and_comments(line):
         i = 0
@@ -40,20 +42,8 @@ def count_metrics(text_fun: str):
             elif line[i] == "#":
                 return line[0:i]
             else:
-                comment_with = ""
-                if line[i] == "'":
-                    if line[i:i + 3] == "'''":
-                        comment_with = "'''"
-                    else:
-                        comment_with = "'"
-                elif line[i] == '"':
-                    if line[i:i + 3] == '"""':
-                        comment_with = '"""'
-                    else:
-                        comment_with = '"'
-                line = line[0:i] + \
-                       line[i + len(comment_with)
-                            + line[i + len(comment_with):leng].find(comment_with) + len(comment_with):leng]
+                comment_with = comment_symbols(line[i:i+3])
+                line = line[0:i] + line[i + len(comment_with) + line[i + len(comment_with):leng].find(comment_with) + len(comment_with):leng]
                 assert (len(line) != leng)
 
     def count_comment_fix_todo():
@@ -70,18 +60,8 @@ def count_metrics(text_fun: str):
                 elif line[i] == "#":
                     return line[i:leng]
                 else:
-                    comment_with = ""
-                    if line[i] == "'":
-                        if line[i:i+3] == "'''":
-                            comment_with = "'''"
-                        else:
-                            comment_with = "'"
-                    elif line[i] == '"':
-                        if line[i:i+3] == '"""':
-                            comment_with = '"""'
-                        else:
-                            comment_with = '"'
-                        i += len(comment_with)
+                    comment_with = comment_symbols(line[i:i+3])
+                    i += len(comment_with)
                     line = line[i + line[i:leng].find(comment_with) + len(comment_with):leng]
                     assert(len(line) != leng)
 
@@ -113,7 +93,7 @@ def count_metrics(text_fun: str):
         for line in re.split(r"\n|;", text_fun):
             line = remove_strings_and_comments(line)
             expressions = []
-            change_line = (re.sub(',', '=', line[line.find('('):line.find(')')]) + '= ') if line.startswith("def ") else line
+            change_line = (re.sub(',', '=', line[line.find('('):line.find(')')]) + ' = ') if re.match(r" *def ", line) else line
             change_line = re.sub(r"==|!=|>=|<=|\+=|-=|\*=|/=|%=|&=|^=|", "", change_line).replace(" in ", " = ")  # TODO add "|="
             # print(f"{line} -> {change_line}")
             k = 0
